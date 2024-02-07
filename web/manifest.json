@@ -1,11 +1,11 @@
 {
-    "name": "accessing_call_logs",
-    "short_name": "accessing_call_logs",
+    "name": "classico",
+    "short_name": "classico",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "access call logs using flutter",
+    "description": "A new Flutter project.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

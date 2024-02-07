@@ -7,7 +7,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:accessing_call_logs/main.dart';
 
 void main() {

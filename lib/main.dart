@@ -1,46 +1,52 @@
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:call_log/call_log.dart';
-import 'package:intl/intl.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-class CustomCallLog {
-  final String callerName;
-  final String phoneNumber;
-  final String callDuration;
-  final DateTime? timestamp;
-
-  CustomCallLog({
-    required this.callerName,
-    required this.phoneNumber,
-    required this.callDuration,
-    required this.timestamp,
-  });
-}
-
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
+  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Call Log Access App',
+      title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.yellow,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+        // This is the theme of your application.
+        //
+        // TRY THIS: Try running your application with "flutter run". You'll see
+        // the application has a purple toolbar. Then, without quitting the app,
+        // try changing the seedColor in the colorScheme below to Colors.green
+        // and then invoke "hot reload" (save your changes or press the "hot
+        // reload" button in a Flutter-supported IDE, or press "r" if you used
+        // the command line to start the app).
+        //
+        // Notice that the counter didn't reset back to zero; the application
+        // state is not lost during the reload. To reset the state, use hot
+        // restart instead.
+        //
+        // This works for code too, not just values: Most code changes can be
+        // tested with just a hot reload.
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Call Log Manager'),
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
+  const MyHomePage({super.key, required this.title});
+
+  // This widget is the home page of your application. It is stateful, meaning
+  // that it has a State object (defined below) that contains fields that affect
+  // how it looks.
+
+  // This class is the configuration for the state. It holds the values (in this
+  // case the title) provided by the parent (in this case the App widget) and
+  // used by the build method of the State. Fields in a Widget subclass are
+  // always marked "final".
 
   final String title;
 
@@ -49,280 +55,72 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<CustomCallLog> callLogs = [];
-  List<CustomCallLog> filteredCallLogs = [];
+  int _counter = 0;
 
-  TextEditingController searchController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Add default entries
-    callLogs.addAll([
-      CustomCallLog(
-        callerName: 'Lavanya',
-        phoneNumber: '9493823862',
-        callDuration: '10 minutes',
-        timestamp: DateTime.now(),
-      ),
-      CustomCallLog(
-        callerName: 'Supraja',
-        phoneNumber: '8897872126',
-        callDuration: '20 minutes',
-        timestamp: DateTime.now(),
-      ),
-      CustomCallLog(
-        callerName: 'SaiRam',
-        phoneNumber: '9347179338',
-        callDuration: '30 minutes',
-        timestamp: DateTime.now(),
-      ),
-      CustomCallLog(
-        callerName: 'Reshma',
-        phoneNumber: '8790207389',
-        callDuration: '10 minutes',
-        timestamp: DateTime.now(),
-      ),
-      CustomCallLog(
-        callerName: 'Usha',
-        phoneNumber: '6363490932',
-        callDuration: '5 minutes',
-        timestamp: DateTime.now(),
-      ),
-
-      // Add more call logs as needed
-    ]);
-
-    _retrieveCallLogs();
-  }
-
-  Future<void> _retrieveCallLogs() async {
-    try {
-      // Check and request permissions only if not running on the web
-      if (!kIsWeb) {
-        if (Platform.isAndroid || Platform.isIOS) {
-          var status = await Permission.contacts.status;
-          if (!status.isGranted) {
-            // Request permission and handle denial
-            var result = await Permission.contacts.request();
-            if (result.isDenied) {
-              // User denied the permission, handle it accordingly
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                      'Permission denied. Please grant access in settings.'),
-                ),
-              );
-              return;
-            }
-          }
-        }
-      }
-
-      // Retrieve call log entries only if callLogs is empty
-      if (callLogs.isEmpty) {
-        Iterable<CallLogEntry> entries = await CallLog.query();
-
-        setState(() {
-          callLogs = entries.map((entry) {
-            return CustomCallLog(
-              callerName: entry.name ?? 'Unknown Caller',
-              phoneNumber: entry.number ?? 'Unknown Number',
-              callDuration: entry.duration.toString(),
-              timestamp:
-                  DateTime.fromMillisecondsSinceEpoch(entry.timestamp ?? 0),
-            );
-          }).toList();
-
-          filteredCallLogs = List.from(callLogs);
-        });
-      }
-    } catch (e) {
-      print('Error retrieving call logs: $e');
-      // Handle the error gracefully (show a message to the user, log it, etc.)
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error retrieving call logs. Please try again.'),
-        ),
-      );
-    }
-  }
-
-  void _sortCallLogs() {
+  void _incrementCounter() {
     setState(() {
-      callLogs.sort((a, b) => a.timestamp!.compareTo(b.timestamp!));
-      filteredCallLogs = List.from(callLogs);
+      // This call to setState tells the Flutter framework that something has
+      // changed in this State, which causes it to rerun the build method below
+      // so that the display can reflect the updated values. If we changed
+      // _counter without calling setState(), then the build method would not be
+      // called again, and so nothing would appear to happen.
+      _counter++;
     });
-  }
-
-  void _searchCallLogs(String query) {
-    setState(() {
-      filteredCallLogs = callLogs
-          .where((log) =>
-              log.callerName.toLowerCase().contains(query.toLowerCase()) ||
-              log.phoneNumber.contains(query))
-          .toList();
-    });
-  }
-
-  void _addNewCallLog(
-      String newCallerName, String newPhoneNumber, String newCallDuration) {
-    CustomCallLog newCallLog = CustomCallLog(
-      callerName: newCallerName,
-      phoneNumber: newPhoneNumber,
-      callDuration: newCallDuration,
-      timestamp: DateTime.now(),
-    );
-
-    setState(() {
-      callLogs.add(newCallLog);
-      filteredCallLogs = List.from(callLogs);
-    });
-  }
-
-  void _showAddCallLogDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        TextEditingController nameController = TextEditingController();
-        TextEditingController phoneController = TextEditingController();
-        TextEditingController durationController = TextEditingController();
-
-        return AlertDialog(
-          title: Text('Add New Call Log'),
-          content: Column(
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(
-                  labelText: 'Caller Name',
-                  icon: Icon(Icons.person),
-                ),
-              ),
-              TextField(
-                controller: phoneController,
-                decoration: InputDecoration(
-                  labelText: 'Phone Number',
-                  icon: Icon(Icons.phone),
-                ),
-              ),
-              TextField(
-                controller: durationController,
-                decoration: InputDecoration(
-                  labelText: 'Call Duration',
-                  icon: Icon(Icons.timer),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                _addNewCallLog(
-                  nameController.text,
-                  phoneController.text,
-                  durationController.text,
-                );
-                Navigator.pop(context);
-              },
-              child: Text('Add'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
   Widget build(BuildContext context) {
+    // This method is rerun every time setState is called, for instance as done
+    // by the _incrementCounter method above.
+    //
+    // The Flutter framework has been optimized to make rerunning build methods
+    // fast, so that you can just rebuild anything that needs updating rather
+    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        title: Center(
-          child: Text(
-            widget.title,
-            style: TextStyle(
-              color: Colors.black87,
-              fontStyle: FontStyle.italic, // Change the color here
-            ),
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.sort),
-            onPressed: _sortCallLogs,
-          ),
-        ],
+        // TRY THIS: Try changing the color here to a specific color (to
+        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
+        // change color while the other colors stay the same.
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        // Here we take the value from the MyHomePage object that was created by
+        // the App.build method, and use it to set our appbar title.
+        title: Text(widget.title),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: searchController,
-              onChanged: _searchCallLogs,
-              decoration: InputDecoration(
-                labelText: 'Search',
-                suffixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
-
-                fillColor: Colors.deepPurple[100], // Change the color here
-                filled: true,
-              ),
+      body: Center(
+        // Center is a layout widget. It takes a single child and positions it
+        // in the middle of the parent.
+        child: Column(
+          // Column is also a layout widget. It takes a list of children and
+          // arranges them vertically. By default, it sizes itself to fit its
+          // children horizontally, and tries to be as tall as its parent.
+          //
+          // Column has various properties to control how it sizes itself and
+          // how it positions its children. Here we use mainAxisAlignment to
+          // center the children vertically; the main axis here is the vertical
+          // axis because Columns
+          // are vertical (the cross axis would be
+          // horizontal).
+          //
+          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
+          // action in the IDE, or press "p" in the console), to see the
+          // wireframe for each widget.
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Text(
+              'You have pushed the button this many times:',
             ),
-          ),
-          Expanded(
-            child: CallLogList(callLogs: filteredCallLogs),
-          ),
-        ],
+            Text(
+              '$_counter',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _showAddCallLogDialog();
-        },
-        tooltip: 'Add New Call Log',
+        onPressed: _incrementCounter,
+        tooltip: 'Increment',
         child: const Icon(Icons.add),
-      ),
-    );
-  }
-}
-
-class CallLogList extends StatelessWidget {
-  final List<CustomCallLog> callLogs;
-
-  CallLogList({required this.callLogs});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: callLogs.length,
-      itemBuilder: (context, index) {
-        return Card(
-          elevation: 4.0,
-          margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-          child: ListTile(
-            title: Text(callLogs[index].callerName),
-            subtitle: Text(callLogs[index].phoneNumber),
-            trailing: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(callLogs[index].callDuration),
-                Text(
-                  DateFormat('HH:mm').format(callLogs[index].timestamp!),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
